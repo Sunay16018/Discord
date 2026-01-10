@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Türk - Sohbet</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="uygulama-kapsayici">
+        <!-- Sol Kenar Çubuğu -->
+        <div class="kenar-cubugu">
+            <div class="kullanici-bilgisi">
+                <h3 id="kullaniciAdiGoster">Yükleniyor...</h3>
+                <button onclick="cikisYap()" class="cikis-butonu">Çıkış Yap</button>
+            </div>
+            
+            <div class="arkadaslar-bolumu">
+                <h2>Arkadaşlar</h2>
+                <div class="arkadas-listesi" id="arkadasListesi">
+                    <div class="yukleniyor">Arkadaşlar yükleniyor...</div>
+                </div>
+                
+                <div class="arkadas-ekle">
+                    <input type="text" id="arkadasInput" placeholder="Arkadaşın kullanıcı adı...">
+                    <button onclick="arkadasEkle()" class="ekle-butonu">Ekle</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ana Sohbet Alanı -->
+        <div class="sohbet-alani">
+            <div class="sohbet-basligi">
+                <h3 id="sohbetKarsiTaraf">Bir arkadaş seçerek sohbete başlayın</h3>
+                <div class="baglanti-durumu">
+                    <span id="baglantiDurumu" class="durum-baglanti">Bağlanıyor...</span>
+                </div>
+            </div>
+            
+            <div class="mesajlar" id="mesajlar">
+                <div class="hosgeldin">
+                    <h2>Discord Türk'e Hoş Geldiniz!</h2>
+                    <p>Sol taraftan arkadaş ekleyin ve mesajlaşmaya başlayın.</p>
+                </div>
+            </div>
+            
+            <div class="mesaj-giris">
+                <input type="text" id="mesajInput" placeholder="Mesajınızı yazın..." disabled>
+                <button onclick="mesajGonder()" id="gonderButonu" disabled>Gönder</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Değişkenler
+        let socket = null;
+        let suankiSohbetArkadasi = null;
+        let token = localStorage.getItem('token');
+        let kullaniciAdi = localStorage.getItem('kullaniciAdi');
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!token || !kullaniciAdi) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            document.getElementById('kullaniciAdiGoster').textContent = kullaniciAdi;
+            socketBaglantisiKur();
+        });
+        
+        // Socket bağlantısını kur
+        function socketBaglantisiKur() {
+            socket = io();
+            
+            socket.on('connect', () => {
+                console.log('Sunucuya bağlandı');
+                document.getElementById('baglantiDurumu').textContent = 'Çevrimiçi';
+                document.getElementById('baglantiDurumu').className = 'durum-baglanti online';
+                
+                // Token ile kimlik doğrulama
+                socket.emit('kimlik_dogrulama', token);
+            });
+            
+            socket.on('kimlik_dogrulandi', (data) => {
+                if (data.basarili) {
+                    console.log('Kimlik doğrulandı:', data.kullaniciAdi);
+                    arkadaslariYukle();
+                } else {
+                    alert('Oturum süresi doldu. Lütfen tekrar giriş yapın.');
+                    cikisYap();
+                }
+            });
+            
+            socket.on('arkadas_listesi', (arkadaslar) => {
+                const liste = document.getElementById('arkadasListesi');
+                liste.innerHTML = '';
+                
+                if (arkadaslar.length === 0) {
+                    liste.innerHTML = '<div class="arkadas-yok">Henüz arkadaşınız yok</div>';
+                    return;
+                }
+                
+                arkadaslar.forEach(arkadas => {
+                    const arkadasElement = document.createElement('div');
+                    arkadasElement.className = 'arkadas-ogesi';
+                    arkadasElement.innerHTML = `
+                        <span class="arkadas-ad">${arkadas}</span>
+                        <span class="durum nokta"></span>
+                    `;
+                    arkadasElement.onclick = () => sohbetAc(arkadas);
+                    liste.appendChild(arkadasElement);
+                });
+            });
+            
+            socket.on('arkadas_eklendi', (arkadas) => {
+                alert(`${arkadas} arkadaş olarak eklendi!`);
+                arkadaslariYukle();
+            });
+            
+            socket.on('yeni_arkadas_istegi', (istek) => {
+                alert(`${istek.kimden} sizi arkadaş olarak ekledi!`);
+                arkadaslariYukle();
+            });
+            
+            socket.on('ozel_mesaj', (mesaj) => {
+                if (!suankiSohbetArkadasi) return;
+                
+                if (mesaj.kimden === suankiSohbetArkadasi || mesaj.kime === suankiSohbetArkadasi) {
+                    mesajGoster(mesaj);
+                    
+                    // Bildirim sesi (isteğe bağlı)
+                    if (mesaj.kimden !== kullaniciAdi) {
+                        new Audio('https://assets.mixkit.co/sfx/preview/mixkit-message-pop-alert-2354.mp3').play().catch(() => {});
+                    }
+                }
+            });
+            
+            socket.on('mesaj_gecmisi', (mesajlar) => {
+                const konteyner = document.getElementById('mesajlar');
+                konteyner.innerHTML = '';
+                
+                if (mesajlar.length === 0) {
+                    konteyner.innerHTML = '<div class="mesaj-yok">Henüz mesaj yok. İlk mesajı siz gönderin!</div>';
+                    return;
+                }
+                
+                mesajlar.forEach(mesaj => mesajGoster(mesaj));
+                konteyner.scrollTop = konteyner.scrollHeight;
+            });
+            
+            socket.on('hata', (hataMesaji) => {
+                alert(`Hata: ${hataMesaji}`);
+            });
+            
+            socket.on('disconnect', () => {
+                document.getElementById('baglantiDurumu').textContent = 'Bağlantı kesildi';
+                document.getElementById('baglantiDurumu').className = 'durum-baglanti offline';
+            });
+            
+            socket.on('connect_error', (error) => {
+                console.error('Bağlantı hatası:', error);
+                document.getElementById('baglantiDurumu').textContent = 'Bağlantı hatası';
+                document.getElementById('baglantiDurumu').className = 'durum-baglanti offline';
+            });
+        }
+        
+        // Fonksiyonlar
+        function arkadaslariYukle() {
+            if (socket) {
+                socket.emit('arkadaslari_getir');
+            }
+        }
+        
+        function arkadasEkle() {
+            const arkadas = document.getElementById('arkadasInput').value.trim();
+            if (arkadas && socket) {
+                socket.emit('arkadas_ekle', arkadas);
+                document.getElementById('arkadasInput').value = '';
+            }
+        }
+        
+        function sohbetAc(arkadas) {
+            suankiSohbetArkadasi = arkadas;
+            document.getElementById('sohbetKarsiTaraf').textContent = `${arkadas} ile sohbet`;
+            document.getElementById('mesajInput').disabled = false;
+            document.getElementById('gonderButonu').disabled = false;
+            
+            if (socket) {
+                socket.emit('mesaj_gecmisi_getir', arkadas);
+            }
+            
+            // Mesaj input'una odaklan
+            setTimeout(() => {
+                document.getElementById('mesajInput').focus();
+            }, 100);
+        }
+        
+        function mesajGonder() {
+            const input = document.getElementById('mesajInput');
+            const mesaj = input.value.trim();
+            
+            if (mesaj && suankiSohbetArkadasi && socket) {
+                socket.emit('ozel_mesaj', {
+                    kime: suankiSohbetArkadasi,
+                    mesaj: mesaj
+                });
+                input.value = '';
+                input.focus();
+            }
+        }
+        
+        function mesajGoster(mesaj) {
+            const konteyner = document.getElementById('mesajlar');
+            const mesajElement = document.createElement('div');
+            
+            const tarih = new Date(mesaj.tarih).toLocaleTimeString('tr-TR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const kendiMesajim = mesaj.kimden === kullaniciAdi;
+            mesajElement.className = `mesaj ${kendiMesajim ? 'gonderilen' : 'alinan'}`;
+            mesajElement.innerHTML = `
+                <div class="mesaj-ust">
+                    <strong>${mesaj.kimden}</strong>
+                    <span class="mesaj-tarih">${tarih}</span>
+                </div>
+                <div class="mesaj-icerik">${mesaj.mesaj}</div>
+            `;
+            
+            konteyner.appendChild(mesajElement);
+            konteyner.scrollTop = konteyner.scrollHeight;
+        }
+        
+        function cikisYap() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('kullaniciAdi');
+            if (socket) {
+                socket.disconnect();
+            }
+            window.location.href = 'login.html';
+        }
+        
+        // Klavye kısayolları
+        document.getElementById('mesajInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                mesajGonder();
+            }
+        });
+        
+        document.getElementById('arkadasInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                arkadasEkle();
+            }
+        });
+        
+        // Sayfa kapanırken
+        window.addEventListener('beforeunload', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>
