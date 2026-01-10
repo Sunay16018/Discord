@@ -3,436 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Türk - Giriş</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- FontAwesome for eye icons -->
+    <title>Discord Türk | Giriş Yap</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="discord-icon.png" type="image/png">
     <style>
-        .giris-sayfasi {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        body {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('background.png') center/cover no-repeat fixed;
             min-height: 100vh;
-            background: linear-gradient(135deg, #7289da 0%, #43b581 100%);
-            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
         }
         
-        .giris-kutusu {
-            background: #36393f;
+        .login-container {
+            background: rgba(54, 57, 63, 0.95);
             padding: 40px;
             border-radius: 10px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        .giris-baslik {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             text-align: center;
-            color: white;
-            margin-bottom: 30px;
-            font-size: 28px;
         }
         
-        .giris-sekmeler {
-            display: flex;
+        .logo {
+            width: 100px;
             margin-bottom: 20px;
-            border-bottom: 2px solid #202225;
         }
         
-        .sekme {
-            flex: 1;
-            text-align: center;
+        .login-form input {
+            width: 100%;
             padding: 15px;
-            cursor: pointer;
-            color: #b9bbbe;
-            font-weight: bold;
-            transition: all 0.3s;
-            font-size: 16px;
-        }
-        
-        .sekme.aktif {
-            color: white;
-            border-bottom: 3px solid #7289da;
-        }
-        
-        .giris-formu {
-            display: none;
-        }
-        
-        .giris-formu.aktif {
-            display: block;
-        }
-        
-        .input-grubu {
-            position: relative;
             margin: 10px 0;
-        }
-        
-        .giris-formu input {
-            width: 100%;
-            padding: 15px 45px 15px 15px;
-            border: none;
-            border-radius: 5px;
             background: #202225;
+            border: 1px solid #202225;
+            border-radius: 5px;
             color: white;
             font-size: 16px;
-            box-sizing: border-box;
         }
         
-        .giris-formu input:focus {
+        .login-form input:focus {
             outline: none;
-            box-shadow: 0 0 0 2px #7289da;
+            border-color: #7289da;
         }
         
-        .sifre-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #b9bbbe;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 5px;
-            transition: color 0.3s;
-        }
-        
-        .sifre-toggle:hover {
-            color: #ffffff;
-        }
-        
-        .giris-formu button[type="submit"] {
+        .login-form button {
             width: 100%;
             padding: 15px;
-            margin-top: 15px;
-            border: none;
-            border-radius: 5px;
             background: #7289da;
             color: white;
+            border: none;
+            border-radius: 5px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.3s;
         }
         
-        .giris-formu button[type="submit"]:hover {
+        .login-form button:hover {
             background: #677bc4;
         }
         
-        .hata-mesaji {
-            color: #f04747;
-            margin-top: 10px;
-            text-align: center;
-            padding: 10px;
-            background: rgba(240, 71, 71, 0.1);
-            border-radius: 5px;
-            display: none;
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #202225;
         }
         
-        .bilgi-mesaji {
-            color: #43b581;
-            margin-top: 10px;
-            text-align: center;
-            padding: 10px;
-            background: rgba(67, 181, 129, 0.1);
-            border-radius: 5px;
-            display: none;
-        }
-        
-        .kullanici-input {
-            position: relative;
-            margin: 10px 0;
-        }
-        
-        .kullanici-input i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
+        .tab {
+            flex: 1;
+            padding: 15px;
+            cursor: pointer;
             color: #b9bbbe;
+            font-weight: bold;
         }
         
-        .kullanici-input input {
-            padding-left: 40px !important;
-        }
-        
-        .sifre-input {
-            position: relative;
-            margin: 10px 0;
-        }
-        
-        .sifre-input i:first-child {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #b9bbbe;
-        }
-        
-        .sifre-input input {
-            padding-left: 40px !important;
+        .tab.active {
+            color: white;
+            border-bottom: 3px solid #7289da;
         }
     </style>
 </head>
 <body>
-    <div class="giris-sayfasi">
-        <div class="giris-kutusu">
-            <h1 class="giris-baslik">Discord Türk</h1>
-            
-            <div class="giris-sekmeler">
-                <div class="sekme aktif" onclick="sekmeDegistir('giris')">Giriş Yap</div>
-                <div class="sekme" onclick="sekmeDegistir('kayit')">Kayıt Ol</div>
-            </div>
-            
-            <!-- Giriş Formu -->
-            <form id="girisFormu" class="giris-formu aktif" onsubmit="girisYap(); return false;">
-                <div class="kullanici-input">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="girisKullanici" placeholder="Kullanıcı Adı" autocomplete="username" required>
-                </div>
-                
-                <div class="sifre-input">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="girisSifre" placeholder="Şifre" autocomplete="current-password" required>
-                    <button type="button" class="sifre-toggle" onclick="sifreGoster('girisSifre', this)">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-                
-                <button type="submit">Giriş Yap</button>
-                <div id="girisHata" class="hata-mesaji"></div>
-                <div id="girisBilgi" class="bilgi-mesaji"></div>
-            </form>
-            
-            <!-- Kayıt Formu -->
-            <form id="kayitFormu" class="giris-formu" onsubmit="kayitOl(); return false;">
-                <div class="kullanici-input">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="kayitKullanici" placeholder="Kullanıcı Adı" autocomplete="username" required>
-                </div>
-                
-                <div class="sifre-input">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="kayitSifre" placeholder="Şifre" autocomplete="new-password" required>
-                    <button type="button" class="sifre-toggle" onclick="sifreGoster('kayitSifre', this)">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-                
-                <div class="sifre-input">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="kayitSifreTekrar" placeholder="Şifre Tekrar" autocomplete="new-password" required>
-                    <button type="button" class="sifre-toggle" onclick="sifreGoster('kayitSifreTekrar', this)">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-                
-                <button type="submit">Hesap Oluştur</button>
-                <div id="kayitHata" class="hata-mesaji"></div>
-                <div id="kayitBilgi" class="bilgi-mesaji"></div>
-            </form>
+    <div class="login-container">
+        <img src="discord-icon.png" alt="Discord Türk" class="logo">
+        <h1>Discord Türk</h1>
+        <p>Arkadaşlarınızla anında mesajlaşın</p>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('login')">Giriş Yap</div>
+            <div class="tab" onclick="showTab('register')">Kayıt Ol</div>
+        </div>
+        
+        <div id="loginForm" class="login-form">
+            <input type="text" id="loginUsername" placeholder="Kullanıcı Adı">
+            <input type="password" id="loginPassword" placeholder="Şifre">
+            <button onclick="login()">Giriş Yap</button>
+            <div id="loginError" class="error"></div>
+        </div>
+        
+        <div id="registerForm" class="login-form" style="display: none;">
+            <input type="text" id="registerUsername" placeholder="Kullanıcı Adı">
+            <input type="password" id="registerPassword" placeholder="Şifre">
+            <input type="password" id="registerPassword2" placeholder="Şifre Tekrar">
+            <button onclick="register()">Hesap Oluştur</button>
+            <div id="registerError" class="error"></div>
         </div>
     </div>
     
     <script>
-        // Sekme değiştirme
-        function sekmeDegistir(sekme) {
-            // Sekmeleri güncelle
-            document.querySelectorAll('.sekme').forEach(s => s.classList.remove('aktif'));
-            document.querySelectorAll('.giris-formu').forEach(f => f.classList.remove('aktif'));
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
             
-            // Hata mesajlarını temizle
-            document.querySelectorAll('.hata-mesaji, .bilgi-mesaji').forEach(el => {
-                el.style.display = 'none';
-                el.textContent = '';
-            });
-            
-            // Aktif sekmeyi göster
-            if (sekme === 'giris') {
-                document.querySelector('.sekme:nth-child(1)').classList.add('aktif');
-                document.getElementById('girisFormu').classList.add('aktif');
-                document.getElementById('girisKullanici').focus();
+            if (tab === 'login') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('loginForm').style.display = 'block';
             } else {
-                document.querySelector('.sekme:nth-child(2)').classList.add('aktif');
-                document.getElementById('kayitFormu').classList.add('aktif');
-                document.getElementById('kayitKullanici').focus();
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('registerForm').style.display = 'block';
             }
         }
         
-        // Şifre göster/gizle
-        function sifreGoster(inputId, buton) {
-            const input = document.getElementById(inputId);
-            const icon = buton.querySelector('i');
+        async function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
             
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-                buton.setAttribute('title', 'Şifreyi gizle');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-                buton.setAttribute('title', 'Şifreyi göster');
-            }
-        }
-        
-        // Giriş yap
-        async function girisYap() {
-            const kullaniciAdi = document.getElementById('girisKullanici').value.trim();
-            const sifre = document.getElementById('girisSifre').value;
-            const hataElement = document.getElementById('girisHata');
-            const bilgiElement = document.getElementById('girisBilgi');
+            errorDiv.textContent = '';
             
-            hataElement.style.display = 'none';
-            bilgiElement.style.display = 'none';
-            
-            if (!kullaniciAdi || !sifre) {
-                hataElement.textContent = 'Lütfen tüm alanları doldurun';
-                hataElement.style.display = 'block';
+            if (!username || !password) {
+                errorDiv.textContent = 'Lütfen tüm alanları doldurun';
                 return;
             }
             
-            bilgiElement.textContent = 'Giriş yapılıyor...';
-            bilgiElement.style.display = 'block';
-            
             try {
-                const response = await fetch('/giris', {
+                const response = await fetch('/api/giris', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ kullaniciAdi, sifre })
+                    body: JSON.stringify({ kullaniciAdi: username, sifre: password })
                 });
                 
                 const data = await response.json();
                 
-                if (response.ok) {
-                    bilgiElement.textContent = 'Giriş başarılı! Yönlendiriliyorsunuz...';
-                    bilgiElement.style.display = 'block';
-                    
-                    // Token ve kullanıcı adını localStorage'a kaydet
+                if (data.basarili) {
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('kullaniciAdi', data.kullaniciAdi);
-                    
-                    // Ana sayfaya yönlendir
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 1000);
+                    localStorage.setItem('username', data.kullaniciAdi);
+                    window.location.href = '/';
                 } else {
-                    hataElement.textContent = data.hata || 'Giriş başarısız';
-                    hataElement.style.display = 'block';
-                    bilgiElement.style.display = 'none';
+                    errorDiv.textContent = data.hata;
                 }
             } catch (error) {
-                console.error('Giriş hatası:', error);
-                hataElement.textContent = 'Sunucu bağlantı hatası. Lütfen daha sonra tekrar deneyin.';
-                hataElement.style.display = 'block';
-                bilgiElement.style.display = 'none';
+                errorDiv.textContent = 'Sunucu hatası';
             }
         }
         
-        // Kayıt ol
-        async function kayitOl() {
-            const kullaniciAdi = document.getElementById('kayitKullanici').value.trim();
-            const sifre = document.getElementById('kayitSifre').value;
-            const sifreTekrar = document.getElementById('kayitSifreTekrar').value;
-            const hataElement = document.getElementById('kayitHata');
-            const bilgiElement = document.getElementById('kayitBilgi');
+        async function register() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const password2 = document.getElementById('registerPassword2').value;
+            const errorDiv = document.getElementById('registerError');
             
-            hataElement.style.display = 'none';
-            bilgiElement.style.display = 'none';
+            errorDiv.textContent = '';
             
-            if (!kullaniciAdi || !sifre || !sifreTekrar) {
-                hataElement.textContent = 'Lütfen tüm alanları doldurun';
-                hataElement.style.display = 'block';
+            if (!username || !password) {
+                errorDiv.textContent = 'Lütfen tüm alanları doldurun';
                 return;
             }
             
-            if (kullaniciAdi.length < 3) {
-                hataElement.textContent = 'Kullanıcı adı en az 3 karakter olmalı';
-                hataElement.style.display = 'block';
+            if (password !== password2) {
+                errorDiv.textContent = 'Şifreler eşleşmiyor';
                 return;
             }
             
-            if (sifre.length < 4) {
-                hataElement.textContent = 'Şifre en az 4 karakter olmalı';
-                hataElement.style.display = 'block';
+            if (username.length < 3) {
+                errorDiv.textContent = 'Kullanıcı adı en az 3 karakter olmalı';
                 return;
             }
             
-            if (sifre !== sifreTekrar) {
-                hataElement.textContent = 'Şifreler eşleşmiyor';
-                hataElement.style.display = 'block';
+            if (password.length < 4) {
+                errorDiv.textContent = 'Şifre en az 4 karakter olmalı';
                 return;
             }
-            
-            bilgiElement.textContent = 'Kayıt yapılıyor...';
-            bilgiElement.style.display = 'block';
             
             try {
-                const response = await fetch('/kayit', {
+                const response = await fetch('/api/kayit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ kullaniciAdi, sifre })
+                    body: JSON.stringify({ kullaniciAdi: username, sifre: password })
                 });
                 
                 const data = await response.json();
                 
-                if (response.ok) {
-                    bilgiElement.textContent = data.mesaj + ' Giriş yapabilirsiniz.';
-                    bilgiElement.style.display = 'block';
-                    
-                    // Formları temizle ve giriş sekmesine geç
-                    document.getElementById('kayitKullanici').value = '';
-                    document.getElementById('kayitSifre').value = '';
-                    document.getElementById('kayitSifreTekrar').value = '';
-                    
-                    setTimeout(() => {
-                        sekmeDegistir('giris');
-                        document.getElementById('girisKullanici').value = kullaniciAdi;
-                        document.getElementById('girisSifre').focus();
-                    }, 2000);
+                if (data.basarili) {
+                    alert('Kayıt başarılı! Giriş yapabilirsiniz.');
+                    showTab('login');
+                    document.getElementById('loginUsername').value = username;
                 } else {
-                    hataElement.textContent = data.hata || 'Kayıt başarısız';
-                    hataElement.style.display = 'block';
-                    bilgiElement.style.display = 'none';
+                    errorDiv.textContent = data.hata;
                 }
             } catch (error) {
-                console.error('Kayıt hatası:', error);
-                hataElement.textContent = 'Sunucu bağlantı hatası. Lütfen daha sonra tekrar deneyin.';
-                hataElement.style.display = 'block';
-                bilgiElement.style.display = 'none';
+                errorDiv.textContent = 'Sunucu hatası';
             }
         }
         
-        // Enter tuşu ile gönderme
-        document.getElementById('girisSifre').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') girisYap();
+        // Enter tuşu desteği
+        document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
         });
         
-        document.getElementById('kayitSifreTekrar').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') kayitOl();
-        });
-        
-        // Sayfa yüklendiğinde giriş kutusuna odaklan
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('girisKullanici').focus();
-            
-            // Tüm şifre toggle butonlarına title ekle
-            document.querySelectorAll('.sifre-toggle').forEach(button => {
-                button.setAttribute('title', 'Şifreyi göster');
-            });
-        });
-        
-        // Input alanlarına tıklayınca hata mesajlarını temizle
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('focus', () => {
-                const form = input.closest('form');
-                const hata = form.querySelector('.hata-mesaji');
-                const bilgi = form.querySelector('.bilgi-mesaji');
-                if (hata) hata.style.display = 'none';
-                if (bilgi) bilgi.style.display = 'none';
-            });
+        document.getElementById('registerPassword2').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') register();
         });
     </script>
 </body>
