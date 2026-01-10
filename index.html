@@ -3,265 +3,466 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Türk - Sohbet</title>
+    <title>Discord Türk | Sohbet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="discord-icon.png" type="image/png">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <div class="uygulama-kapsayici">
-        <!-- Sol Kenar Çubuğu -->
-        <div class="kenar-cubugu">
-            <div class="kullanici-bilgisi">
-                <h3 id="kullaniciAdiGoster">Yükleniyor...</h3>
-                <button onclick="cikisYap()" class="cikis-butonu">Çıkış Yap</button>
+    <div class="app-container">
+        <!-- Sol Sütun -->
+        <div class="left-sidebar">
+            <div class="server-list">
+                <div class="server-item active" onclick="showDirectMessages()">
+                    <img src="default-avatar.png" alt="DM">
+                </div>
+                <div class="server-item" onclick="showServer('genel')">
+                    <img src="default-avatar.png" alt="Genel">
+                </div>
+                <div class="add-server" onclick="createServer()">
+                    <i class="fas fa-plus"></i>
+                </div>
             </div>
             
-            <div class="arkadaslar-bolumu">
-                <h2>Arkadaşlar</h2>
-                <div class="arkadas-listesi" id="arkadasListesi">
-                    <div class="yukleniyor">Arkadaşlar yükleniyor...</div>
+            <div class="user-panel">
+                <div class="user-avatar" onclick="openProfileModal()">
+                    <img id="userAvatar" src="default-avatar.png" alt="Profil">
+                    <span class="status-indicator online" id="userStatus"></span>
                 </div>
-                
-                <div class="arkadas-ekle">
-                    <input type="text" id="arkadasInput" placeholder="Arkadaşın kullanıcı adı...">
-                    <button onclick="arkadasEkle()" class="ekle-butonu">Ekle</button>
-                </div>
+            </div>
+        </div>
+        
+        <!-- Orta Sütun -->
+        <div class="middle-sidebar">
+            <div class="friends-header">
+                <h3><i class="fas fa-comment-alt"></i> Özel Mesajlar</h3>
+                <button class="icon-btn" onclick="toggleAddFriend()">
+                    <i class="fas fa-user-plus"></i>
+                </button>
+            </div>
+            
+            <div class="add-friend-box" id="addFriendBox" style="display: none;">
+                <input type="text" id="friendUsername" placeholder="Kullanıcı adı girin">
+                <button onclick="sendFriendRequest()">İstek Gönder</button>
+            </div>
+            
+            <div class="friends-list" id="friendsList">
+                <!-- Arkadaşlar buraya gelecek -->
+            </div>
+            
+            <div class="friend-requests" id="friendRequests" style="display: none;">
+                <h4>Arkadaşlık İstekleri</h4>
+                <div id="requestsContainer"></div>
             </div>
         </div>
         
         <!-- Ana Sohbet Alanı -->
-        <div class="sohbet-alani">
-            <div class="sohbet-basligi">
-                <h3 id="sohbetKarsiTaraf">Bir arkadaş seçerek sohbete başlayın</h3>
-                <div class="baglanti-durumu">
-                    <span id="baglantiDurumu" class="durum-baglanti">Bağlanıyor...</span>
+        <div class="main-chat">
+            <div class="chat-header">
+                <div class="chat-info">
+                    <div class="chat-avatar">
+                        <img id="chatAvatar" src="default-avatar.png" alt="Avatar">
+                        <span class="status-indicator" id="chatStatus"></span>
+                    </div>
+                    <div>
+                        <h3 id="chatWith">Sohbet Seçin</h3>
+                        <p id="chatStatusText">Bir arkadaş seçerek sohbete başlayın</p>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="icon-btn" onclick="toggleFriendRequests()">
+                        <i class="fas fa-user-friends"></i>
+                        <span class="badge" id="requestCount">0</span>
+                    </button>
+                    <button class="icon-btn" onclick="openProfileModal()">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </div>
             </div>
             
-            <div class="mesajlar" id="mesajlar">
-                <div class="hosgeldin">
+            <div class="messages-container" id="messagesContainer">
+                <div class="welcome-screen">
+                    <img src="discord-icon.png" alt="Discord Türk" class="welcome-logo">
                     <h2>Discord Türk'e Hoş Geldiniz!</h2>
-                    <p>Sol taraftan arkadaş ekleyin ve mesajlaşmaya başlayın.</p>
+                    <p>Arkadaşlarınızla anında mesajlaşın</p>
                 </div>
             </div>
             
-            <div class="mesaj-giris">
-                <input type="text" id="mesajInput" placeholder="Mesajınızı yazın..." disabled>
-                <button onclick="mesajGonder()" id="gonderButonu" disabled>Gönder</button>
+            <div class="message-input">
+                <input type="text" id="messageInput" placeholder="Mesajınızı yazın..." disabled>
+                <button id="sendButton" onclick="sendMessage()" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
     
+    <!-- Profil Modal -->
+    <div class="modal" id="profileModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Profil Düzenle</h3>
+                <button onclick="closeProfileModal()" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="avatar-edit">
+                    <img id="editAvatar" src="default-avatar.png" alt="Profil">
+                    <button onclick="changeAvatar()">Avatar Değiştir</button>
+                </div>
+                <div class="form-group">
+                    <label>Durum</label>
+                    <input type="text" id="editStatus" placeholder="Durumunuz">
+                </div>
+                <div class="form-group">
+                    <label>Hakkımda</label>
+                    <textarea id="editBio" placeholder="Kendinizden bahsedin"></textarea>
+                </div>
+                <button onclick="saveProfile()" class="save-btn">Kaydet</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bildirimler -->
+    <div class="notifications" id="notifications"></div>
+    
     <script>
-        // Değişkenler
         let socket = null;
-        let suankiSohbetArkadasi = null;
+        let currentUser = null;
+        let currentChat = null;
         let token = localStorage.getItem('token');
-        let kullaniciAdi = localStorage.getItem('kullaniciAdi');
         
-        // Sayfa yüklendiğinde
         document.addEventListener('DOMContentLoaded', () => {
-            if (!token || !kullaniciAdi) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            document.getElementById('kullaniciAdiGoster').textContent = kullaniciAdi;
-            socketBaglantisiKur();
+            if (!token) window.location.href = '/login';
+            else initApp();
         });
         
-        // Socket bağlantısını kur
-        function socketBaglantisiKur() {
+        function initApp() {
             socket = io();
             
             socket.on('connect', () => {
-                console.log('Sunucuya bağlandı');
-                document.getElementById('baglantiDurumu').textContent = 'Çevrimiçi';
-                document.getElementById('baglantiDurumu').className = 'durum-baglanti online';
-                
-                // Token ile kimlik doğrulama
                 socket.emit('kimlik_dogrulama', token);
             });
             
             socket.on('kimlik_dogrulandi', (data) => {
                 if (data.basarili) {
-                    console.log('Kimlik doğrulandı:', data.kullaniciAdi);
-                    arkadaslariYukle();
+                    currentUser = data.kullaniciAdi;
+                    loadUserProfile();
+                    loadFriends();
+                    loadFriendRequests();
+                    updateUI();
                 } else {
-                    alert('Oturum süresi doldu. Lütfen tekrar giriş yapın.');
-                    cikisYap();
+                    localStorage.clear();
+                    window.location.href = '/login';
                 }
             });
             
-            socket.on('arkadas_listesi', (arkadaslar) => {
-                const liste = document.getElementById('arkadasListesi');
-                liste.innerHTML = '';
-                
-                if (arkadaslar.length === 0) {
-                    liste.innerHTML = '<div class="arkadas-yok">Henüz arkadaşınız yok</div>';
-                    return;
+            socket.on('yeni_mesaj', (mesaj) => {
+                if (currentChat === mesaj.gonderen) {
+                    displayMessage(mesaj);
                 }
-                
-                arkadaslar.forEach(arkadas => {
-                    const arkadasElement = document.createElement('div');
-                    arkadasElement.className = 'arkadas-ogesi';
-                    arkadasElement.innerHTML = `
-                        <span class="arkadas-ad">${arkadas}</span>
-                        <span class="durum nokta"></span>
-                    `;
-                    arkadasElement.onclick = () => sohbetAc(arkadas);
-                    liste.appendChild(arkadasElement);
-                });
-            });
-            
-            socket.on('arkadas_eklendi', (arkadas) => {
-                alert(`${arkadas} arkadaş olarak eklendi!`);
-                arkadaslariYukle();
+                showNotification(`${mesaj.gonderen}: ${mesaj.mesaj.substring(0, 30)}...`);
             });
             
             socket.on('yeni_arkadas_istegi', (istek) => {
-                alert(`${istek.kimden} sizi arkadaş olarak ekledi!`);
-                arkadaslariYukle();
+                showNotification(`${istek.gonderen} arkadaşlık isteği gönderdi!`);
+                loadFriendRequests();
             });
             
-            socket.on('ozel_mesaj', (mesaj) => {
-                if (!suankiSohbetArkadasi) return;
-                
-                if (mesaj.kimden === suankiSohbetArkadasi || mesaj.kime === suankiSohbetArkadasi) {
-                    mesajGoster(mesaj);
-                    
-                    // Bildirim sesi (isteğe bağlı)
-                    if (mesaj.kimden !== kullaniciAdi) {
-                        new Audio('https://assets.mixkit.co/sfx/preview/mixkit-message-pop-alert-2354.mp3').play().catch(() => {});
-                    }
-                }
+            socket.on('arkadas_istegi_kabul_edildi', (data) => {
+                showNotification(`${data.kabulEden} arkadaşlık isteğinizi kabul etti!`);
+                loadFriends();
+            });
+            
+            socket.on('arkadas_listesi', (arkadaslar) => {
+                renderFriendsList(arkadaslar);
             });
             
             socket.on('mesaj_gecmisi', (mesajlar) => {
-                const konteyner = document.getElementById('mesajlar');
-                konteyner.innerHTML = '';
-                
-                if (mesajlar.length === 0) {
-                    konteyner.innerHTML = '<div class="mesaj-yok">Henüz mesaj yok. İlk mesajı siz gönderin!</div>';
-                    return;
+                renderChatHistory(mesajlar);
+            });
+            
+            socket.on('arkadas_durumu_degisti', (data) => {
+                updateFriendStatus(data.kullaniciAdi, data.online);
+            });
+            
+            socket.on('profil_guncellendi', (data) => {
+                if (data.kullaniciAdi === currentUser) {
+                    document.getElementById('userAvatar').src = data.profil.avatar;
+                    document.getElementById('editAvatar').src = data.profil.avatar;
                 }
-                
-                mesajlar.forEach(mesaj => mesajGoster(mesaj));
-                konteyner.scrollTop = konteyner.scrollHeight;
-            });
-            
-            socket.on('hata', (hataMesaji) => {
-                alert(`Hata: ${hataMesaji}`);
-            });
-            
-            socket.on('disconnect', () => {
-                document.getElementById('baglantiDurumu').textContent = 'Bağlantı kesildi';
-                document.getElementById('baglantiDurumu').className = 'durum-baglanti offline';
-            });
-            
-            socket.on('connect_error', (error) => {
-                console.error('Bağlantı hatası:', error);
-                document.getElementById('baglantiDurumu').textContent = 'Bağlantı hatası';
-                document.getElementById('baglantiDurumu').className = 'durum-baglanti offline';
             });
         }
         
-        // Fonksiyonlar
-        function arkadaslariYukle() {
-            if (socket) {
-                socket.emit('arkadaslari_getir');
+        function loadUserProfile() {
+            fetch(`/api/profil/${currentUser}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.basarili) {
+                        document.getElementById('userAvatar').src = data.profil.avatar;
+                        document.getElementById('editAvatar').src = data.profil.avatar;
+                        document.getElementById('editStatus').value = data.profil.durum || '';
+                        document.getElementById('editBio').value = data.profil.bio || '';
+                    }
+                });
+        }
+        
+        function loadFriends() {
+            socket.emit('arkadas_listesi_iste');
+        }
+        
+        function loadFriendRequests() {
+            fetch(`/api/arkadas/istekler/${token}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.basarili) {
+                        const count = data.istekler.length;
+                        document.getElementById('requestCount').textContent = count;
+                        renderFriendRequests(data.istekler);
+                    }
+                });
+        }
+        
+        function renderFriendsList(arkadaslar) {
+            const container = document.getElementById('friendsList');
+            container.innerHTML = '';
+            
+            const online = arkadaslar.filter(f => f.online);
+            const offline = arkadaslar.filter(f => !f.online);
+            
+            if (online.length > 0) {
+                container.innerHTML += '<div class="category">ÇEVRİMİÇİ</div>';
+                online.forEach(friend => {
+                    container.innerHTML += createFriendHTML(friend);
+                });
+            }
+            
+            if (offline.length > 0) {
+                container.innerHTML += '<div class="category">ÇEVRİMDIŞI</div>';
+                offline.forEach(friend => {
+                    container.innerHTML += createFriendHTML(friend);
+                });
             }
         }
         
-        function arkadasEkle() {
-            const arkadas = document.getElementById('arkadasInput').value.trim();
-            if (arkadas && socket) {
-                socket.emit('arkadas_ekle', arkadas);
-                document.getElementById('arkadasInput').value = '';
-            }
+        function createFriendHTML(friend) {
+            return `
+                <div class="friend-item" onclick="startChat('${friend.kullaniciAdi}')">
+                    <div class="friend-avatar">
+                        <img src="${friend.profil.avatar}" alt="${friend.kullaniciAdi}">
+                        <span class="status-indicator ${friend.online ? 'online' : 'offline'}"></span>
+                    </div>
+                    <div class="friend-info">
+                        <span class="friend-name">${friend.kullaniciAdi}</span>
+                        <span class="friend-status">${friend.profil.durum || ''}</span>
+                    </div>
+                </div>
+            `;
         }
         
-        function sohbetAc(arkadas) {
-            suankiSohbetArkadasi = arkadas;
-            document.getElementById('sohbetKarsiTaraf').textContent = `${arkadas} ile sohbet`;
-            document.getElementById('mesajInput').disabled = false;
-            document.getElementById('gonderButonu').disabled = false;
+        function renderFriendRequests(istekler) {
+            const container = document.getElementById('requestsContainer');
+            container.innerHTML = '';
             
-            if (socket) {
-                socket.emit('mesaj_gecmisi_getir', arkadas);
-            }
-            
-            // Mesaj input'una odaklan
-            setTimeout(() => {
-                document.getElementById('mesajInput').focus();
-            }, 100);
+            istekler.forEach(istek => {
+                container.innerHTML += `
+                    <div class="request-item">
+                        <img src="${istek.profil.avatar}" alt="${istek.kullaniciAdi}">
+                        <span>${istek.kullaniciAdi}</span>
+                        <div>
+                            <button onclick="acceptRequest('${istek.kullaniciAdi}')">✓</button>
+                            <button onclick="declineRequest('${istek.kullaniciAdi}')">✗</button>
+                        </div>
+                    </div>
+                `;
+            });
         }
         
-        function mesajGonder() {
-            const input = document.getElementById('mesajInput');
-            const mesaj = input.value.trim();
+        function startChat(username) {
+            currentChat = username;
             
-            if (mesaj && suankiSohbetArkadasi && socket) {
-                socket.emit('ozel_mesaj', {
-                    kime: suankiSohbetArkadasi,
-                    mesaj: mesaj
+            document.getElementById('chatWith').textContent = username;
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendButton').disabled = false;
+            
+            const friend = getFriendInfo(username);
+            if (friend) {
+                document.getElementById('chatAvatar').src = friend.profil.avatar;
+                document.getElementById('chatStatus').className = `status-indicator ${friend.online ? 'online' : 'offline'}`;
+                document.getElementById('chatStatusText').textContent = friend.profil.durum || (friend.online ? 'Çevrimiçi' : 'Çevrimdışı');
+            }
+            
+            socket.emit('mesaj_gecmisi_iste', username);
+            document.querySelector('.welcome-screen').style.display = 'none';
+        }
+        
+        function getFriendInfo(username) {
+            // Arkadaş bilgisini bul
+            return null; // Basit implementasyon
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message && currentChat) {
+                socket.emit('mesaj_gonder', {
+                    alici: currentChat,
+                    mesaj: message
                 });
                 input.value = '';
                 input.focus();
             }
         }
         
-        function mesajGoster(mesaj) {
-            const konteyner = document.getElementById('mesajlar');
-            const mesajElement = document.createElement('div');
+        function displayMessage(mesaj) {
+            const container = document.getElementById('messagesContainer');
+            const isOwn = mesaj.gonderen === currentUser;
             
-            const tarih = new Date(mesaj.tarih).toLocaleTimeString('tr-TR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            const kendiMesajim = mesaj.kimden === kullaniciAdi;
-            mesajElement.className = `mesaj ${kendiMesajim ? 'gonderilen' : 'alinan'}`;
-            mesajElement.innerHTML = `
-                <div class="mesaj-ust">
-                    <strong>${mesaj.kimden}</strong>
-                    <span class="mesaj-tarih">${tarih}</span>
+            const messageHTML = `
+                <div class="message ${isOwn ? 'own' : 'other'}">
+                    <img src="${mesaj.gonderenProfil.avatar}" alt="${mesaj.gonderen}">
+                    <div class="message-content">
+                        <div class="message-header">
+                            <strong>${mesaj.gonderen}</strong>
+                            <small>${new Date(mesaj.tarih).toLocaleTimeString()}</small>
+                        </div>
+                        <div class="message-text">${mesaj.mesaj}</div>
+                    </div>
                 </div>
-                <div class="mesaj-icerik">${mesaj.mesaj}</div>
             `;
             
-            konteyner.appendChild(mesajElement);
-            konteyner.scrollTop = konteyner.scrollHeight;
+            container.innerHTML += messageHTML;
+            container.scrollTop = container.scrollHeight;
         }
         
-        function cikisYap() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('kullaniciAdi');
-            if (socket) {
-                socket.disconnect();
-            }
-            window.location.href = 'login.html';
+        function renderChatHistory(mesajlar) {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            
+            mesajlar.forEach(mesaj => displayMessage(mesaj));
         }
         
-        // Klavye kısayolları
-        document.getElementById('mesajInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                mesajGonder();
-            }
-        });
+        function sendFriendRequest() {
+            const username = document.getElementById('friendUsername').value.trim();
+            if (!username) return;
+            
+            fetch('/api/arkadas/istek/gonder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, hedefKullanici: username })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.basarili) {
+                    showNotification('İstek gönderildi!');
+                    document.getElementById('friendUsername').value = '';
+                    toggleAddFriend();
+                } else {
+                    showNotification(data.hata, 'error');
+                }
+            });
+        }
         
-        document.getElementById('arkadasInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                arkadasEkle();
-            }
-        });
+        function acceptRequest(username) {
+            fetch('/api/arkadas/istek/kabul', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, gonderen: username })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.basarili) {
+                    showNotification('Arkadaş eklendi!');
+                    loadFriends();
+                    loadFriendRequests();
+                }
+            });
+        }
         
-        // Sayfa kapanırken
-        window.addEventListener('beforeunload', () => {
-            if (socket) {
-                socket.disconnect();
-            }
-        });
+        function declineRequest(username) {
+            // Basit implementasyon
+            loadFriendRequests();
+        }
+        
+        function saveProfile() {
+            const status = document.getElementById('editStatus').value;
+            const bio = document.getElementById('editBio').value;
+            
+            fetch('/api/profil/guncelle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, durum: status, bio })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.basarili) {
+                    showNotification('Profil güncellendi!');
+                    closeProfileModal();
+                }
+            });
+        }
+        
+        function changeAvatar() {
+            // Basit implementasyon - varsayılan avatar
+            document.getElementById('editAvatar').src = 'default-avatar.png';
+        }
+        
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notifications');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()">&times;</button>
+            `;
+            container.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        function toggleAddFriend() {
+            const box = document.getElementById('addFriendBox');
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function toggleFriendRequests() {
+            const requests = document.getElementById('friendRequests');
+            requests.style.display = requests.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function openProfileModal() {
+            document.getElementById('profileModal').style.display = 'block';
+        }
+        
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+        
+        function createServer() {
+            showNotification('Sunucu oluşturma özelliği yakında!');
+        }
+        
+        function showDirectMessages() {
+            document.querySelector('.middle-sidebar').style.display = 'block';
+        }
+        
+        function showServer(server) {
+            showNotification(`${server} sunucusu açılıyor...`);
+        }
+        
+        function updateUI() {
+            document.title = `Discord Türk | ${currentUser}`;
+        }
+        
+        function updateFriendStatus(username, online) {
+            const items = document.querySelectorAll(`.friend-item`);
+            items.forEach(item => {
+                if (item.querySelector('.friend-name')?.textContent === username) {
+                    const indicator = item.querySelector('.status-indicator');
+                    if (indicator) indicator.className = `status-indicator ${online ? 'online' : 'offline'}`;
+                }
+            });
+        }
     </script>
 </body>
-</html>
+    </html>
