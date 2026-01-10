@@ -1,5 +1,5 @@
 {
-  "name": "discord-turk",
+  "name": "discord",
   "version": "1.0.0",
   "description": "Discord benzeri Türkçe gerçek zamanlı sohbet uygulaması",
   "main": "server.js",
