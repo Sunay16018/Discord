@@ -1,0 +1,67 @@
+/* assets/css/main.css */
+:root {
+    --bg-servers: #1e1f22;
+    --bg-channels: #2b2d31;
+    --bg-chat: #313338;
+    --text-color: #dbdee1;
+    --accent-color: #5865f2;
+}
+
+body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; color: var(--text-color); }
+
+.app-container { display: flex; height: 100vh; width: 100vw; }
+
+/* 1. Sütun: Sunucular */
+.server-sidebar {
+    width: 72px;
+    background-color: var(--bg-servers);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+    gap: 10px;
+    overflow-y: auto;
+}
+.server-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    transition: 0.2s;
+    cursor: pointer;
+    background-size: cover;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; color: #fff;
+}
+.server-icon:hover { border-radius: 16px; }
+
+/* 2. Sütun: Kanallar */
+.channel-sidebar {
+    width: 240px;
+    background-color: var(--bg-channels);
+    display: flex;
+    flex-direction: column;
+}
+.channel-header { padding: 16px; font-weight: bold; border-bottom: 1px solid rgba(0,0,0,0.2); box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+.channel-list { flex: 1; padding: 10px; overflow-y: auto; }
+.channel-item { padding: 8px; margin-bottom: 2px; border-radius: 4px; cursor: pointer; color: #949ba4; }
+.channel-item:hover, .channel-item.active { background-color: rgba(255,255,255,0.05); color: var(--text-color); }
+
+/* 3. Sütun: Sohbet */
+.chat-area {
+    flex: 1;
+    background-color: var(--bg-chat);
+    display: flex;
+    flex-direction: column;
+}
+.messages-wrapper { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+.message-row { display: flex; gap: 15px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-color); flex-shrink: 0; }
+.msg-content h4 { margin: 0; font-size: 1rem; color: #fff; }
+.msg-content p { margin: 5px 0 0; line-height: 1.4; }
+
+.input-area { padding: 20px; }
+#chat-input {
+    width: 100%; padding: 15px;
+    background: #383a40; border: none;
+    border-radius: 8px; color: #fff; outline: none;
+    font-size: 1rem;
+}
