@@ -1,0 +1,67 @@
+:root {
+    --bg-dark: #1e1f22;
+    --bg-mid: #2b2d31;
+    --bg-light: #313338;
+    --text-main: #f2f3f5;
+    --text-muted: #949ba4;
+    --accent: #5865f2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: var(--bg-light); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }
+
+/* --- PC GÖRÜNÜMÜ (Varsayılan) --- */
+
+/* 1. Sol: Sunucular */
+.server-bar { width: 72px; background: var(--bg-dark); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; flex-shrink: 0; }
+.server-icon { width: 48px; height: 48px; background: #35373c; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer; font-weight: bold; }
+.server-icon:hover { border-radius: 16px; background: var(--accent); }
+
+/* 2. Orta: Arkadaş Listesi */
+.list-panel { width: 240px; background: var(--bg-mid); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #1f2023; }
+.panel-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1f2023; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.user-list { flex: 1; overflow-y: auto; padding: 10px; }
+.user-item { display: flex; align-items: center; padding: 8px; border-radius: 4px; cursor: pointer; color: var(--text-muted); margin-bottom: 4px; }
+.user-item:hover { background: #35373c; color: white; }
+.user-item.active { background: rgba(88, 101, 242, 0.6); color: white; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); margin-right: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; }
+
+/* 3. Sağ: Sohbet Alanı */
+.chat-panel { flex: 1; display: flex; flex-direction: column; background: var(--bg-light); min-width: 0; } /* min-width fix for flex */
+.chat-header { height: 50px; padding: 0 16px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; justify-content: space-between; }
+.messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 15px; }
+.message { display: flex; gap: 10px; }
+.msg-bubble { max-width: 85%; }
+.msg-info { font-size: 0.9rem; margin-bottom: 2px; }
+.msg-time { font-size: 0.7rem; color: var(--text-muted); margin-left: 5px; }
+.msg-text { word-wrap: break-word; line-height: 1.4; color: #dcddde; }
+
+/* Mesaj Kutusu */
+.input-area { padding: 16px; background: var(--bg-light); }
+.input-wrapper { background: #383a40; border-radius: 8px; display: flex; padding: 10px; align-items: center; }
+input { width: 100%; background: transparent; border: none; color: white; outline: none; font-size: 1rem; }
+
+/* Butonlar */
+.back-btn { display: none; background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 10px; }
+
+/* --- MOBİL UYUMLULUK (Responsive) --- */
+@media (max-width: 768px) {
+    .server-bar { display: none; } /* Mobilde sunucu barını gizle, yer aç */
+    
+    .list-panel { width: 100%; } /* Liste ekranı kaplasın */
+    
+    .chat-panel { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        transform: translateX(100%); transition: transform 0.3s ease; z-index: 10;
+    }
+    
+    /* Sohbet aktif olduğunda kayarak gelsin */
+    .chat-panel.active { transform: translateX(0); }
+    
+    .back-btn { display: block; } /* Geri butonunu göster */
+}
+
+/* Login Sayfası */
+.login-container { display: flex; height: 100vh; align-items: center; justify-content: center; background: url('https://i.imgur.com/vH9j2bJ.png') center/cover; }
+.login-box { background: #313338; padding: 30px; border-radius: 5px; width: 90%; max-width: 400px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+.login-btn { width: 100%; padding: 10px; background: var(--accent); color: white; border: none; border-radius: 3px; font-weight: bold; cursor: pointer; margin-top: 10px; }
